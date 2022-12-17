@@ -1,4 +1,5 @@
 import telebot
+import sqlite3
 
 TOKEN = "5958081967:AAFSDhG4CshOZqHKCIq9VFzQ-fJnHNuBjqg"
 
@@ -10,11 +11,20 @@ def greetings(message):
     bot.reply_to(message, reply)
 
 
+    if message.text == '/show data':
+        data = read_data_from_db()
+        for datum in data:
+            bot.reply_to(message, str(datum))
+
 
 is_taking_address = False
 is_taking_phone = False
 is_taking_surname = False
 is_taking_name = False
+name = None
+surname = None
+phone = None
+address = None
 @bot.message_handler(content_types=['text'])
 def message_handler(message):
     chat_id = message.chat.id
@@ -22,26 +32,34 @@ def message_handler(message):
     global is_taking_surname
     global is_taking_phone
     global is_taking_address
+    global name
+    global surname
+    global phone
+    global address
+
+
 
     if is_taking_name:
 
-        user_name = message.text
-        print(user_name)
+        name = message.text
+        print(name)
         is_taking_name = False
 
     if is_taking_surname:
-        user_surname = message.text
-        print(user_surname)
+        surname = message.text
+        print(surname)
         is_taking_surname = False
 
     if is_taking_phone:
-        user_phone = message.text
-        print(user_phone)
-        is_taking_surname = False
+        phone = message.text
+        print(phone)
+        is_taking_phone = False
+
     if is_taking_address:
-        user_address = message.text
-        print(user_address)
+        address = message.text
+        print(address)
         is_taking_address = False
+        save_data_to_db(name, surname, phone, address)
 
     if message.text == 'Save name':
         is_taking_name = True
@@ -55,5 +73,44 @@ def message_handler(message):
     if message.text == 'Save address':
         is_taking_address = True
         bot.send_message(chat_id, "Input your address: ")
+
+def save_data_to_db(name, surname, phone, address):
+
+    connection = None
+
+    try:
+        connection = sqlite3.connect("db_telegrambot2")
+        cursor = connection.cursor()
+
+        insert_sql = f"""INSERT INTO 
+                    telegrambot2 (name, surname, phone, address)
+                    VALUES ('{name}', '{surname}', '{phone}', '{address}')"""
+        cursor.execute(insert_sql)
+        connection.commit()
+        connection.close()
+    except Exception as e:
+        print("There was an error in the database! ")
+        print(e)
+
+def read_data_from_db():
+    try:
+        connection = sqlite3.connect("db_telegrambot2")
+        cursor = connection.cursor()
+
+        select_sql = """
+        SELECT * FROM telegrambot2
+        """
+        cursor.execute(select_sql)
+        connection.commit()
+
+        data = cursor.fetchall()
+
+        connection.close()
+        return data
+    except Exception as e:
+        print("There was an error in the database! ")
+        print(e)
+
+
 
 bot.infinity_polling()
