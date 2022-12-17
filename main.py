@@ -1,6 +1,8 @@
 import telebot
 import sqlite3
 
+from telebot.types import KeyboardButton, ReplyKeyboardMarkup
+
 TOKEN = "5958081967:AAFSDhG4CshOZqHKCIq9VFzQ-fJnHNuBjqg"
 
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
@@ -8,13 +10,10 @@ bot = telebot.TeleBot(TOKEN, parse_mode=None)
 @bot.message_handler(commands=['start'])
 def greetings(message):
     reply = "Hello i am a simple data collection bot"
-    bot.reply_to(message, reply)
+    bot.reply_to(message, reply, reply_markup=keyboard())
 
 
-    if message.text == '/show data':
-        data = read_data_from_db()
-        for datum in data:
-            bot.reply_to(message, str(datum))
+
 
 
 is_taking_address = False
@@ -74,6 +73,11 @@ def message_handler(message):
         is_taking_address = True
         bot.send_message(chat_id, "Input your address: ")
 
+    if message.text == 'Show All':
+        data = read_data_from_db()
+        for datum in data:
+            bot.reply_to(message, str(datum))
+
 def save_data_to_db(name, surname, phone, address):
 
     connection = None
@@ -111,6 +115,19 @@ def read_data_from_db():
         print("There was an error in the database! ")
         print(e)
 
+
+def keyboard():
+    markup = ReplyKeyboardMarkup(row_width=2)
+
+    button1 = KeyboardButton("Save name")
+    button2 = KeyboardButton("Show All")
+    button3 = KeyboardButton("Save surname")
+    button4 = KeyboardButton("Save phone")
+    button5 = KeyboardButton("Save address")
+    markup.add(button1, button2)
+    markup.add(button3, button4, button5)
+
+    return markup
 
 
 bot.infinity_polling()
