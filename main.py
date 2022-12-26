@@ -77,7 +77,10 @@ def message_handler(message):
         data = read_data_from_db()
         for datum in data:
             bot.reply_to(message, str(datum))
-
+    if message.text == "Next":
+        bot.reply_to(message, "Выберите пункт меню", reply_markup=next_keyboard())
+    if message.text == "back":
+        bot.reply_to(message, "Выберите данные", reply_markup=keyboard())
 def save_data_to_db(name, surname, phone, address):
 
     connection = None
@@ -117,16 +120,29 @@ def read_data_from_db():
 
 
 def keyboard():
-    markup = ReplyKeyboardMarkup(row_width=2)
+    markup = ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
 
     button1 = KeyboardButton("Save name")
     button2 = KeyboardButton("Show All")
     button3 = KeyboardButton("Save surname")
     button4 = KeyboardButton("Save phone")
     button5 = KeyboardButton("Save address")
+    button6 = KeyboardButton("Next")
     markup.add(button1, button2)
     markup.add(button3, button4, button5)
+    markup.add(button6)
 
+    return markup
+
+
+def next_keyboard():
+    markup = ReplyKeyboardMarkup(row_width=3, resize_keyboard=True)
+    button1 = KeyboardButton("Text1")
+    button2 = KeyboardButton("Text2")
+    button3 = KeyboardButton("Text3")
+    button4 = KeyboardButton("back")
+    markup.add(button1, button2, button3)
+    markup.add(button4)
     return markup
 
 
